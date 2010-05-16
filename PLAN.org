@@ -1,0 +1,88 @@
+* Idea
+The simplest possible work distribution service.  It needs to be
+simple to set up, simple to use, and reliable.
+
+There are three kinds of participants: Clients, Workers and
+Distibutors.  Workers and distributors are both servers and appear the
+same to clients.
+** Worker
+A worker is a process doing actual computation work.
+** Distributor
+A distributor takes work from a client and ships it to one of its
+workers.  If the worker dies, the computation is re-distributed.  The
+distributor has a database of computations in progress and finished
+computations, so if the distributor itself dies, it can restart
+without any loss.  The record of a finished computation is deleted
+once it's been shipped back to the client.
+** Client
+A client ships work to a server (either a worker directly or a
+distributor).  For each computation it requests to be done it gets a
+computation ID, with which it can request the result, which it
+typically does immediately.  If the connection dies for whatever
+reason, it will re-connect and re-request the result.  If everything
+fails, it will do the computation locally.
+* API
+** Client
+To connect to a server:
+
+#+BEGIN_SRC clojure
+(connect server port)
+#+END_SRC
+
+=connect= returns a connection object.
+
+To distribute some work one needs to get a distribution function from
+the connection:
+
+#+BEGIN_SRC clojure
+(worker-function connection name local-function)
+#+END_SRC
+
+=worker-function= returns a function that distributes the work or
+calls the local function if that's not possible.  =name= can be any
+value that has equality.  It should include not only the function
+name, but also a version.  =local-function= is the local
+implementation of the function.
+* Protocols
+There are two protocols: The protocol that a client uses to talk to a
+server and the protocol that a worker uses to register with a
+distributor and lets the distributor know about its workload (or maybe
+the server knows enough - we might want to let a worker connect to
+more than one distributor).
+** Client-Server
+*** Compute
+The compute call takes a function name and an argument list.  The
+server immediately returns a computation ID.
+*** Ask
+The ask call takes a computation ID and returns (after an indefinite
+time) a result or an exception or an error.  An error can occur if the
+server doesn't know about the computation ID, doesn't have the
+function in question or has no computation capacity (which can only
+occur for a distributor).  The computation only starts with the ask
+call.
+** Worker-Distributor
+We might be able to make it even without those two calls, simply by
+calling the workers in order of eligibility and using the first one
+that doesn't return an error.
+*** Register
+The register call takes a function name.
+*** Unregister
+The unregister call takes a function name.
+* Implementation
+** Distributor
+The distributor should have a web interface where it shows statistics.
+** Serialization
+Unfortunately, most Clojure classes are not serializable.  To make
+them so, we need to substitute our own stand-in serializable class.
+This means that when we serialize, we must create such a stand-in for
+each Clojure object we encounter and when we deserialize, we must
+replace the deserialized stand-in objects with the corresponding
+Clojure objects.
+*** Serializing
+Serializing is more difficult because ObjectOutputStream refuses to
+serialize objects not implementing the interface.  We must subclass
+ObjectOutputStream and do the substitution in the writeObject method.
+We should make sure that we preserve sharing.
+*** Deserializing
+We can use the readResolve method to substitute Clojure objects for
+our stand-in objects.
