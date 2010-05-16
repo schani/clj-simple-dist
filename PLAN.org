@@ -69,20 +69,8 @@ The register call takes a function name.
 *** Unregister
 The unregister call takes a function name.
 * Implementation
+We'll use Java RMI for all communication.  In Clojure 1.2 all basic
+Clojure data structures are serializable, so that's our minimum
+requirement.
 ** Distributor
 The distributor should have a web interface where it shows statistics.
-** Serialization
-Unfortunately, most Clojure classes are not serializable.  To make
-them so, we need to substitute our own stand-in serializable class.
-This means that when we serialize, we must create such a stand-in for
-each Clojure object we encounter and when we deserialize, we must
-replace the deserialized stand-in objects with the corresponding
-Clojure objects.
-*** Serializing
-Serializing is more difficult because ObjectOutputStream refuses to
-serialize objects not implementing the interface.  We must subclass
-ObjectOutputStream and do the substitution in the writeObject method.
-We should make sure that we preserve sharing.
-*** Deserializing
-We can use the readResolve method to substitute Clojure objects for
-our stand-in objects.
