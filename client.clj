@@ -4,6 +4,6 @@
   (let [registry (java.rmi.registry.LocateRegistry/getRegistry server port)]
     (.lookup registry "Server")))
 
-(defn worker-function [distributer name local-fun]
+(defn worker-function [distributor name local-fun]
   (fn [& args]
-    (.ask distributer (.compute distributer name args))))
+    (.compute distributor name args)))
