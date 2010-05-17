@@ -25,7 +25,10 @@
       (ask [id]
 	   (let [job (@computations id)]
 	     (if job
-	       (apply (:fun job) (:args job))
+	       (let [result (apply (:fun job) (:args job))]
+		 (dosync
+		  (alter computations dissoc id))
+		 result)
 	       (throw (Exception. "job not found"))))))))
 
 (defn register-server [server]
