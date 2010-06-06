@@ -4,4 +4,5 @@
                  [org.clojure/clojure-contrib "1.2.0-SNAPSHOT"]]
   :source-path "src/clj"
   :java-source-path "src/java"
-  :dev-dependencies [[lein-javac "0.0.2-SNAPSHOT"]])
+  :dev-dependencies [[lein-javac "0.0.2-SNAPSHOT"]
+		     [swank-clojure "1.2.1"]])
