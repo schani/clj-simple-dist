@@ -1,4 +1,4 @@
-(add-classpath "file:///Users/schani/Work/clojure/dist/")
+(ns at.ac.tuwien.complang.distributor.client)
 
 (defn connect [server port]
   (let [registry (java.rmi.registry.LocateRegistry/getRegistry server port)]

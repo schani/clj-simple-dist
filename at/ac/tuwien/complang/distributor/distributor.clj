@@ -1,11 +1,8 @@
-(add-classpath "file:///Users/schani/Work/clojure/dist/")
+(ns at.ac.tuwien.complang.distributor.distributor
+  (:import [at.ac.tuwien.complang.distributor DistributionServer])
+  (:use at.ac.tuwien.complang.distributor.client))
 
-(def *rmi-registry* (java.rmi.registry.LocateRegistry/createRegistry 1099))
-
-(defn stop-rmi []
-  (java.rmi.server.UnicastRemoteObject/unexportObject *rmi-registry* true))
-
-;; workers is a seq maps of the form {:host <host> :port <port>}
+;; workers is a seq of maps of the form {:host <host> :port <port>}
 (defn distributor-server [workers]
   (let [connected-workers (ref {})
 	worker-load (ref {})
@@ -21,7 +18,7 @@
 				     (alter connected-workers assoc worker dist)
 				     (alter worker-load assoc worker 0))))))]
     (doseq [worker workers]
-      (let [thread (Thread. (connect-thread-func worker))]
+      (let [thread (Thread. (fn [] (connect-thread-func worker)))]
 	(.setDaemon thread true)
 	(.start thread)))
     (proxy [at.ac.tuwien.complang.distributor.DistributionServer] []
