@@ -1,5 +1,5 @@
 (ns at.ac.tuwien.complang.distributor.worker
-  (:import [at.ac.tuwien.complang.distributor DistributionServer]))
+  (:import [at.ac.tuwien.complang.distributor DistributionServer NotImplementedException]))
 
 (defn worker-server [funcs]
   (proxy [at.ac.tuwien.complang.distributor.DistributionServer] []
@@ -7,4 +7,4 @@
 	     (let [fun (funcs fun-name)]
 	       (if fun
 		 (apply fun args)
-		 (throw (Exception. "no such function")))))))
+		 (throw (NotImplementedException.)))))))

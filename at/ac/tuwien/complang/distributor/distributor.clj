@@ -1,5 +1,5 @@
 (ns at.ac.tuwien.complang.distributor.distributor
-  (:import [at.ac.tuwien.complang.distributor DistributionServer])
+  (:import [at.ac.tuwien.complang.distributor DistributionServer NotImplementedException])
   (:use at.ac.tuwien.complang.distributor.client))
 
 ;; workers is a seq of maps of the form {:host <host> :port <port>}
@@ -12,7 +12,7 @@
 		     sorted (sort-by #(loads %) workers)]
 		 (loop [workers sorted]
 		   (if (empty? workers)
-		     (throw (Exception. "no workers with that function"))
+		     (throw (NotImplementedException.))
 		     (let [worker (first workers)
 			   dist (connected-workers worker)]
 		       (send worker-loads (fn [l] (assoc l worker (inc (l worker)))))

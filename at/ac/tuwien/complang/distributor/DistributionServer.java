@@ -5,5 +5,5 @@ import java.rmi.RemoteException;
 import java.io.Serializable;
 
 public interface DistributionServer extends Remote {
-	Serializable compute (Serializable function, Serializable args) throws RemoteException;
+	Serializable compute (Serializable function, Serializable args) throws RemoteException, NotImplementedException;
 }

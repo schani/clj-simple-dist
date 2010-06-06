@@ -1,4 +1,5 @@
-(ns at.ac.tuwien.complang.distributor.client)
+(ns at.ac.tuwien.complang.distributor.client
+  (:import [at.ac.tuwien.complang.distributor NotImplementedException]))
 
 (defn- connect-thread-func [host port server-atom]
   (loop []
@@ -31,6 +32,8 @@
 	(if server
 	  (let [result (try
 			(.compute server name args)
+			(catch NotImplementedException _
+			  (apply local-fun args))
 			(catch java.rmi.ConnectException _
 			  (reset! server-atom nil)
 			  ::failure))]
