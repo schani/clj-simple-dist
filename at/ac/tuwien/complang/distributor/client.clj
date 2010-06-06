@@ -34,6 +34,8 @@
 			(.compute server name args)
 			(catch NotImplementedException _
 			  (apply local-fun args))
+			(catch java.rmi.UnexpectedException exc
+			  (throw (or (.getCause exc) exc)))
 			(catch java.rmi.ConnectException _
 			  (reset! server-atom nil)
 			  ::failure))]
