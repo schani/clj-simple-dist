@@ -2,6 +2,9 @@
   (:import [at.ac.tuwien.complang.distributor DistributionServer NotImplementedException])
   (:use at.ac.tuwien.complang.distributor.client))
 
+(defprotocol Distributor
+  (loads [this]))
+
 ;; workers is a seq of maps of the form {:host <host> :port <port>}
 (defn distributor-server [workers]
   (let [connected-workers (into {} (map (fn [worker] [worker (connect (:host worker) (:port worker))]) workers))
@@ -21,4 +24,7 @@
 			(send worker-loads (fn [l] (assoc l worker (dec (l worker)))))
 			(if (= result ::local)
 			  (recur (rest workers))
-			  result))))))))))
+			  result)))))))
+     Distributor
+     (loads [this]
+	    @worker-loads))))
