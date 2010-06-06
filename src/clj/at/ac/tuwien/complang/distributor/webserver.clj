@@ -1,20 +1,19 @@
 (ns at.ac.tuwien.complang.distributor.webserver
   (:use compojure.core
 	ring.adapter.jetty
+	hiccup
 	clojure.contrib.def
 	at.ac.tuwien.complang.distributor.distributor)
   (:require [compojure.route :as route]))
 
 (defn- main-page [dist]
-  (apply str
-	 "<h1>Distributor</h1>"
-	 "<table><tr><td><b>host</b></td><td><b>port</b></td><td><b>load</b></td></tr>"
-	 (apply str (map (fn [x]
-			   (let [worker (key x)
-				 load (val x)]
-			     (str "<tr><td>" (:host worker) "</td><td>" (:port worker) "</td><td>" load "</td></tr>")))
-			 (loads dist)))
-	 "</table>"))
+  (html [:h1 "Distributor"]
+	[:table [:tr (map (fn [x] [:td [:b x]]) ["host" "port" "load"])]
+	 (map (fn [x]
+		(let [worker (key x)
+		      load (val x)]
+		  [:tr [:td (:host worker)] [:td (:port worker)] [:td load]]))
+	      (loads dist))]))
 
 (defn distributor-routes [dist]
   (routes
