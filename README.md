@@ -54,8 +54,8 @@ Let's call it:
     (dist-fib 20)
     => 6765
 
-Wonderful!  Just to see if will still work, kill the worker process,
-and try again:
+Wonderful!  Just to see if it will still work, kill the worker
+process, and try again:
 
     (dist-fib 20)
     => local
@@ -69,7 +69,7 @@ Run a few long-running jobs:
 
     (pmap dist-fib (range 45))
 
-And go to [http://localhost:8080](http://localhost:8080).  There
+and go to [http://localhost:8080](http://localhost:8080).  There
 you'll see the simple web interface of the distributor that tells you
 which workers it knows about and what jobs they're currently
 executing.
