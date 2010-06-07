@@ -13,7 +13,7 @@
       (swap! registry (fn [r]
 			(if r
 			  r
-			  (create-registry port)))))))
+			  (create-or-get-registry port)))))))
 
 (defvar- worker-registry (make-registry-func *worker-port*))
 
