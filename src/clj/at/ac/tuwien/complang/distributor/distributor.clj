@@ -1,36 +1,66 @@
 (ns at.ac.tuwien.complang.distributor.distributor
-  (:import [at.ac.tuwien.complang.distributor DistributionServer NotImplementedException])
+  (:import [at.ac.tuwien.complang.distributor Distributor NotImplementedException])
   (:use at.ac.tuwien.complang.distributor.client))
 
 (defn- make-counter []
   (let [c (atom 0)]
     #(swap! c inc)))
 
-(defprotocol Distributor
+(defprotocol DistributorAccess
   (loads [this]))
 
-;; workers is a seq of maps of the form {:host <host> :port <port>}
-(defn distributor-server [workers]
-  (let [connected-workers (into {} (map (fn [worker] [worker (connect (:host worker) (:port worker))]) workers))
-	worker-loads (agent (into {} (map (fn [worker] [worker {}]) workers)))
+(defn- add-load [workers name load-id fun time]
+  (let [worker (workers name)]
+    ;; the worker might have been removed already
+    (if worker
+      (let [new-worker (assoc worker :loads (assoc (:loads worker) load-id {:function fun :start-time time}))]
+	(assoc workers name new-worker))
+      workers)))
+
+(defn- remove-load [workers name load-id]
+  (let [worker (workers name)]
+    (if worker
+      (let [new-worker (assoc worker :loads (dissoc (:loads worker) load-id))]
+	(assoc workers name new-worker))
+      workers)))
+
+;; workers maps from name to a map {:worker <worker-obj> :loads <load-map>}
+;; where load-map maps from the load-id to a map {:function <fun-name> :start-time <time>}
+(defn distributor-server []
+  (let [workers (agent {})
 	counter (make-counter)]
     (reify
-     DistributionServer
-     (compute [this fun args]
-	      (let [loads @worker-loads
-		    sorted (sort-by #(loads %) workers)]
-		(loop [workers sorted]
-		  (if (empty? workers)
-		    (throw (NotImplementedException.))
-		    (let [worker (first workers)
-			  dist (connected-workers worker)
-			  load-id (counter)]
-		      (send worker-loads (fn [l] (assoc l worker (assoc (l worker) load-id {:function fun :start-time (System/currentTimeMillis)}))))
-		      (let [result (apply (worker-function (connected-workers worker) fun (fn [& _] ::local)) args)]
-			(send worker-loads (fn [l] (assoc l worker (dissoc (l worker) load-id))))
-			(if (= result ::local)
-			  (recur (rest workers))
-			  result)))))))
      Distributor
+     (register [this worker name]
+	       (send workers assoc name {:worker worker :loads {}}))
+     (compute [this fun args]
+	      (let [sorted (sort-by #(count (:loads %)) @workers)]
+		(loop [sorted sorted]
+		  (if (empty? sorted)
+		    (throw (NotImplementedException.))
+		    (let [[name worker] (first sorted)
+			  dist (:worker worker)
+			  load-id (counter)]
+		      (send workers add-load name load-id fun (System/currentTimeMillis))
+		      (let [result (try
+				    (.compute dist fun args)
+				    (catch NotImplementedException exc
+				      ::not-implemented)
+				    (catch java.rmi.UnexpectedException exc
+				      (throw (or (.getCause exc) exc)))
+				    (catch java.rmi.ConnectException _
+				      ::failure)
+				    (finally
+				     (send workers remove-load name load-id)))]
+			(case result
+			      ::not-implemented
+			      (recur (rest sorted))
+			      ::failure
+			      (do
+				(send workers dissoc name)
+				(recur (rest sorted)))
+			      result)))))))
+     DistributorAccess
      (loads [this]
-	    @worker-loads))))
+	    (into {} (map (fn [kv] [(key kv) (:loads (val kv))])
+			  @workers))))))

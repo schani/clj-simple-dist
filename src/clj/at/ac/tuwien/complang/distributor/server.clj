@@ -8,5 +8,5 @@
 
 (defn register-server [registry server]
   (.rebind registry
-	   "Server"
+	   "clj-simple-dist-worker"
 	   (java.rmi.server.UnicastRemoteObject/exportObject server 0)))

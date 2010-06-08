@@ -1,15 +1,15 @@
 (ns at.ac.tuwien.complang.distributor.webserver
   (:use compojure.core
 	ring.adapter.jetty
+	clout.core
 	hiccup
 	hiccup.page-helpers
 	clojure.contrib.def
 	at.ac.tuwien.complang.distributor.distributor)
   (:require [compojure.route :as route]))
 
-(defn- worker-page [dist host port]
-  (let [name (str host ":" port)
-	worker ((loads dist) {:host host :port  (java.lang.Integer/parseInt port)})]
+(defn- worker-page [dist name]
+  (let [worker ((loads dist) name)]
     (if worker
       (html [:h1 "Worker " name]
 	    [:table [:tr (map (fn [x] [:td [:b x]]) ["function" "time (s)"])]
@@ -23,13 +23,12 @@
   (html [:h1 "Distributor"]
 	[:table [:tr (map (fn [x] [:td [:b x]]) ["worker" "load"])]
 	 (map (fn [x]
-		(let [{host :host port :port} (key x)
-		      load-map (val x)]
-		  [:tr [:td (link-to (str "/worker/" host "/" port) (str host ":" port))] [:td (count load-map)]]))
+		(let [[name load-map] x]
+		  [:tr [:td (link-to (str "/worker/" name) name)] [:td (count load-map)]]))
 	      (loads dist))]))
 
 (defn distributor-routes [dist]
   (routes
    (GET "/" [] (main-page dist))
-   (GET "/worker/:host/:port" [host port] (worker-page dist host port))
+   (GET (route-compile "/worker/:name" {:name #"[^/]+"}) [name] (worker-page dist name))
    (route/not-found "<h1>Page not found</h1>")))

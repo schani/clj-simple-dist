@@ -10,7 +10,7 @@
       (do
 	(try
 	 (let [registry (java.rmi.registry.LocateRegistry/getRegistry host port)
-	       server (.lookup registry "Server")]
+	       server (.lookup registry "clj-simple-dist-worker")]
 	   (reset! server-atom server))
 	 (catch java.rmi.RemoteException _
 	   (Thread/sleep 1000))

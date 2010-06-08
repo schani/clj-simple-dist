@@ -1,9 +1,9 @@
 (ns at.ac.tuwien.complang.distributor.worker
-  (:import [at.ac.tuwien.complang.distributor DistributionServer NotImplementedException]))
+  (:import [at.ac.tuwien.complang.distributor Worker NotImplementedException]))
 
 (defn worker-server [funcs]
   (reify
-   DistributionServer
+   Worker
    (compute [this fun-name args]
 	    (let [fun (funcs fun-name)]
 	      (if fun
