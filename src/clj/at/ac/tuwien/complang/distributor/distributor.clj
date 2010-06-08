@@ -48,7 +48,7 @@
 				      ::not-implemented)
 				    (catch java.rmi.UnexpectedException exc
 				      (throw (or (.getCause exc) exc)))
-				    (catch java.rmi.ConnectException _
+				    (catch Exception _
 				      ::failure)
 				    (finally
 				     (send workers remove-load name load-id)))]
