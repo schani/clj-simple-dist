@@ -14,7 +14,7 @@
       (html [:h1 "Worker " name]
 	    [:table [:tr (map (fn [x] [:td [:b x]]) ["function" "time (s)"])]
 	     (map (fn [x]
-		    [:tr [:td (:function x)] [:td (int (/ (- (System/currentTimeMillis) (:start-time x)) 1000))]])
+		    [:tr [:td (str (:function x))] [:td (int (/ (- (System/currentTimeMillis) (:start-time x)) 1000))]])
 		  (map val worker))]
 	    [:p (link-to "/" "Overview")])
       (html [:p "The worker " name " does not exist."]))))
