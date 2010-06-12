@@ -2,3 +2,5 @@
 *.class
 lib
 dist.jar
+pom.xml
+clj-simple-dist.jar

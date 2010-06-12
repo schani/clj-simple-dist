@@ -1,4 +1,4 @@
-(defproject dist "0.0.1-SNAPSHOT"
+(defproject clj-simple-dist "0.0.1-SNAPSHOT"
   :description "Simple Clojure Distribution Service"
   :dependencies [[org.clojure/clojure "1.2.0-master-SNAPSHOT"]
                  [org.clojure/clojure-contrib "1.2.0-SNAPSHOT"]
